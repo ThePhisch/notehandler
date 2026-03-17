@@ -25,6 +25,9 @@ trap exit_peacefully SIGINT
 
 react_to_change() {
 	echo "Some files have changed in ${NOTE_FOLDER}"
+	git add .
+	git commit -m "Automatic commit by handler.sh on ${NOTE_FOLDER} at ${date}."
+	git push origin main
 }
 export NOTE_FOLDER
 export -f react_to_change
