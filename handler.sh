@@ -17,12 +17,19 @@ then
 	exit 1
 fi
 
+exit_peacefully() {
+	echo "Exiting peacefully."
+	exit 0
+}
+trap exit_peacefully SIGINT
+
 react_to_change() {
 	echo "Some files have changed in ${NOTE_FOLDER}"
 }
+export NOTE_FOLDER
 export -f react_to_change
 
 while sleep 0.5
 do
-	find ${NOTE_FOLDER} -type f | entr -d bash -c 'react_to_change'
+	find ${NOTE_FOLDER} -type f | entr -dnr bash -c 'react_to_change'
 done
