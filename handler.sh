@@ -1,10 +1,10 @@
 #!/bin/bash
+# Anton Schwarz
+# 2026-03-17
 
-PULL_INTERVAL=10  # seconds
-NOTE_FOLDER=./test  # should be global folder
-
-echo "Running handler.sh with NOTE_FOLDER=${NOTE_FOLDER}."
-
+#===============================================================
+# Check prerequisites are installed
+#===============================================================
 if [[ -z "$(command -v entr)" ]]
 then
 	echo "ERROR: entr is not installed!"
@@ -17,6 +17,28 @@ then
 	exit 1
 fi
 
+#===============================================================
+# Handle input variables
+#===============================================================
+DEFAULT_NOTE_FOLDER="~/Documents/notes"
+NOTE_FOLDER="${NOTE_FOLDER:-DEFAULT_NOTE_FOLDER}"  # override using env
+if [[ -n "$1" ]]
+then
+	# override using first argument
+	NOTE_FOLDER="$1"
+fi
+# TODO: check if note folder exists and git is initialised here
+
+PULL_INTERVAL=300  # seconds
+if [[ -n "$2" ]]
+then
+	# override pull interval using second argument
+	PULL_INTERVAL="$2"
+fi
+
+#===============================================================
+# Function definitions
+#===============================================================
 exit_peacefully() {
 	# listen to Ctrl-C, propagate this to the background loop looking for
 	# data to pull from remote by killing the process identified by PID.
@@ -56,6 +78,11 @@ pull_remote_change() {
 }
 export -f pull_remote_change
 
+#===============================================================
+# We can start now.
+#===============================================================
+echo "Running handler.sh with NOTE_FOLDER=${NOTE_FOLDER}."
+
 while true
 do
 	pull_remote_change
@@ -64,10 +91,9 @@ done &
 # save the PID of this background loop so we can kill it later.
 PULL_LOOP_PID=$!
 
-# NOTE using `sleep` here would mean that a new entr subprocess is spawned regularly
-# We actually want a new subprocess to start immediately, but only once the
-# current one finishes!
-# Also ignore git internals.
+# NOTE using `sleep` here would mean that a new entr subprocess is spawned
+# regularly We actually want a new subprocess to start immediately, but only
+# once the current one finishes! Also ignore git internals.
 while true
 do
 	find ${NOTE_FOLDER} -type f \
