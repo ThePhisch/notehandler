@@ -16,6 +16,7 @@ date.
     - pull intervals
     - push intervals/rules regarding bunching of local changes
     - note folder location
+- notehandler must fail fast and noticeably
 - notehandler must be available as a background service that runs at startup
 
 ## Implementation details
