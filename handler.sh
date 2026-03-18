@@ -1,6 +1,9 @@
 #!/bin/bash
 # Anton Schwarz
 # 2026-03-17
+#
+
+# set -x  # enable command tracing
 
 #===============================================================
 # Check prerequisites are installed
@@ -27,7 +30,7 @@ then
 	# override using first argument
 	NOTE_FOLDER="$1"
 fi
-# TODO: check if note folder exists and git is initialised here
+NOTE_FOLDER=$(realpath "${NOTE_FOLDER}")  # expand to absolute path
 
 PULL_INTERVAL=300  # seconds
 if [[ -n "$2" ]]
@@ -35,6 +38,23 @@ then
 	# override pull interval using second argument
 	PULL_INTERVAL="$2"
 fi
+
+# check if the folder is a top-level git repository
+if git -C "${NOTE_FOLDER}" rev-parse --is-inside-work-tree
+then
+	# NOTE_FOLDER is in a repo, check if is top level	
+	TOPLEVEL_REPO=$(git -C "${NOTE_FOLDER}" rev-parse --show-toplevel)
+	if [[ "${TOPLEVEL_REPO}" != "${NOTE_FOLDER}" ]]
+	then
+		echo "ERROR: ${NOTE_FOLDER} is not top-level git repository!" 
+		echo "${TOPLEVEL_REPO} is!"
+		exit 1
+	fi
+else
+	echo "ERROR: ${NOTE_FOLDER} is not a git repository!"
+	exit 1
+fi
+
 
 #===============================================================
 # Function definitions
